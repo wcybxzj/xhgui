@@ -1,0 +1,58 @@
+1.安装mongodb
+1.1:docker安装的mongodb
+
+1.2:宿主安装mongodb-shell
+vim /etc/yum.repos.d/mongodb-org.repo
+[mongodb-org-3.4]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc
+
+yum install mongodb-org-shell -y
+
+1.3:配置索引
+mongo --port 27017 -u "root" -p "k0VPvkx123" --authenticationDatabase "admin"
+
+测试插入点测试数据
+db.users.insertOne(
+   {
+      name: "sue",
+      age: 19,
+      status: "P"
+   }
+)
+返回true
+
+use xhprof
+db.results.ensureIndex( { 'meta.SERVER.REQUEST_TIME' : -1 } )
+db.results.ensureIndex( { 'profile.main().wt' : -1 } )
+db.results.ensureIndex( { 'profile.main().mu' : -1 } )
+db.results.ensureIndex( { 'profile.main().cpu' : -1 } )
+db.results.ensureIndex( { 'meta.url' : 1 } )
+db.results.ensureIndex( { 'meta.simple_url' : 1 } )
+
+1.4:限制MongoDB磁盘使用,只保留15天的数据
+use xhprof
+db.results.ensureIndex( {"meta.request_ts" : 1 }, { expireAfterSeconds : 1296000 } )
+==========================================================================================
+2.php安装插件
+git clone https://github.com/tideways/php-xhprof-extension.git
+==========================================================================================
+3.安装后台
+==========================================================================================
+4.nginx或者php项目引入监控脚本
+location ~ \.php$ {
+    fastcgi_pass   127.0.0.1:9010;
+    fastcgi_index  index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param PHP_VALUE "auto_prepend_file=/root/www/xhgui/external/header.php";
+    include        fastcgi_params;
+}
+==========================================================================================
+5.让其他php项目可以引入监控代码
+vim /usr/local/nginx/conf//usr/local/nginx/conf
+#fastcgi_param PHP_ADMIN_VALUE "open_basedir=$document_root/:/tmp/:/proc/";
+==========================================================================================
+==========================================================================================
